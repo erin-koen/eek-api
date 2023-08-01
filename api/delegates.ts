@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { gql, GraphQLClient } from 'graphql-request'
 import { loadEnv } from '../utils/loadEnv';
+import { formatUnits } from 'ethers';
 
 const endpoint = loadEnv('TALLY_URL')
 const apiKey = loadEnv('TALLY_API_KEY')
@@ -58,12 +59,13 @@ export default async (request: VercelRequest, response: VercelResponse) => {
 `
 
   const data = await graphQLClient.request<responseFormat>(query)
-  console.log(data)
-  const formattedData: { name: string, address: string, votes: string }[] = data.governanceBySlug.delegates.map((item) => {
+
+  const formattedData: { name: string, address: string, votes: number }[] = data.governanceBySlug.delegates.map((item) => {
+
     return {
       name: item.participation.account.name,
       address: item.participation.account.address,
-      votes: item.participation.stats.votingPower.net
+      votes: Number(formatUnits(item.participation.stats.votingPower.net, 18))
     }
 
   })
