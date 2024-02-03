@@ -13,17 +13,17 @@ interface responseFormat {
   "governanceBySlug": {
     "delegates":
     {
-      "participation": {
-        "stats": {
-          "votingPower": {
-            "net": string
-          }
-        },
-        "account": {
-          "name": string,
-          "address": string
+
+      "stats": {
+        "votingPower": {
+          "net": string
         }
+      },
+      "account": {
+        "name": string,
+        "address": string
       }
+
     }[],
   }
 }
@@ -36,21 +36,20 @@ const graphQLClient = new GraphQLClient(tallyEndpoint, {
 )
 
 const query = gql`
-query {governanceBySlug(slug: "uniswap") {
-    delegates(sort: {field: VOTING_WEIGHT, order: DESC}, pagination: {limit: 100}) {
-        participation {
-            stats {
-                votingPower {
-                    net
-                }
-            }
-            account {
-                name
-                address
-            }
+query {
+  governanceBySlug(slug: "uniswap") {
+    delegates(sort: {field: VOTING_WEIGHT, order: DESC}, pagination: {limit: 30}) {
+      stats {
+        votingPower {
+          net
         }
+      }
+      account {
+        name
+        address
+      }
     }
-}}
+  }
 `
 
 
@@ -63,9 +62,9 @@ export default async (request: VercelRequest, response: VercelResponse) => {
   const formattedData: { name: string, address: string, votes: number }[] = data.governanceBySlug.delegates.map((item) => {
 
     return {
-      name: item.participation.account.name,
-      address: item.participation.account.address,
-      votes: Number(formatUnits(item.participation.stats.votingPower.net, 18))
+      name: item.account.name,
+      address: item.account.address,
+      votes: Number(formatUnits(item.stats.votingPower.net, 18))
     }
 
   })
