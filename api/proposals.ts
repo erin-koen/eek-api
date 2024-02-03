@@ -58,7 +58,7 @@ export default async (request: VercelRequest, response: VercelResponse) => {
       id: Number(item.id),
       totalVotes
     }
-  })
+  }).sort((a, b) => a.id - b.id)
 
   response.send(formattedData)
 
