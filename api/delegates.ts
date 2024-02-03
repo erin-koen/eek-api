@@ -69,7 +69,7 @@ export default async (request: VercelRequest, response: VercelResponse) => {
 
   })
 
-  // response.send(formattedData)
+
   response.send(formattedData)
 
 };
