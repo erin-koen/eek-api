@@ -38,7 +38,7 @@ const graphQLClient = new GraphQLClient(tallyEndpoint, {
 const query = gql`
 query {
   governanceBySlug(slug: "uniswap") {
-    delegates(sort: {field: VOTING_WEIGHT, order: DESC}, pagination: {limit: 30}) {
+    delegates(sort: {field: VOTING_WEIGHT, order: DESC}) {
       stats {
         votingPower {
           net
