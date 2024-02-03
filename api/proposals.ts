@@ -11,22 +11,17 @@ const tallyAuthKey = "Api-key"
 interface responseFormat {
 
   "governanceBySlug": {
-    "delegates":
+    "proposals":
     {
-
-      "stats": {
-        "votingPower": {
-          "net": string
-        }
-      },
-      "account": {
-        "name": string,
-        "address": string
-      }
-
-    }[],
+      "id": string;
+      "voteStats": {
+        "support": "FOR" | "AGAINST" | "ABSTAIN"
+        "weight": string;
+      }[]
+    }[]
   }
 }
+
 
 const graphQLClient = new GraphQLClient(tallyEndpoint, {
   headers: {
@@ -38,37 +33,32 @@ const graphQLClient = new GraphQLClient(tallyEndpoint, {
 const query = gql`
 query {
   governanceBySlug(slug: "uniswap") {
-    delegates(sort: {field: VOTING_WEIGHT, order: DESC}, pagination: {limit: 30}) {
-      stats {
-        votingPower {
-          net
-        }
-      }
-      account {
-        name
-        address
+    proposals {
+      id
+      voteStats {
+        support
+        weight
       }
     }
   }
+}
 `
-
-
 
 
 export default async (request: VercelRequest, response: VercelResponse) => {
 
   const data = await graphQLClient.request<responseFormat>(query)
 
-  const formattedData: { name: string, address: string, votes: number }[] = data.governanceBySlug.delegates.map((item) => {
-
+  const formattedData: { id: number, totalVotes: number }[] = data.governanceBySlug.proposals.map((item) => {
+    const totalVotes = item.voteStats.reduce((prev, curr) => {
+      const currentVotes = Number(formatUnits(curr.weight, 18))
+      return prev + currentVotes
+    }, 0)
     return {
-      name: item.account.name,
-      address: item.account.address,
-      votes: Number(formatUnits(item.stats.votingPower.net, 18))
+      id: Number(item.id),
+      totalVotes
     }
-
   })
-
 
   response.send(formattedData)
 
